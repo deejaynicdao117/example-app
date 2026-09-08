@@ -26,6 +26,7 @@ class AuthService extends BaseService
             'message' => 'Login successful',
             'access_token' => $token,
             'token_type' => 'Bearer',
+            'user' => $user,
         ]);
     }
     public function logout($user)

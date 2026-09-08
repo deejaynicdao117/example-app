@@ -37,8 +37,12 @@ class PostController extends Controller
         return $result;
     }
 
-    public function update_post(Request $request)
+    public function update_post(Request $request, $id = null)
     {
+        if ($id !== null && !$request->has('id')) {
+            $request->merge(['id' => $id]);
+        }
+
         $data = $request->validate([
             'id' => 'required|integer|exists:posts,id',
             'title' => 'required|string|max:255',

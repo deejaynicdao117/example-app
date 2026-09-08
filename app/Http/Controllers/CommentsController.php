@@ -30,7 +30,31 @@ class CommentsController extends Controller
             'content' => 'required|string',
         ]);
 
-        $data['id'] = $id ?? $request->input('id');
+        $candidates = [
+            $request->input('id'),
+            $request->input('comment_id'),
+            $id,
+        ];
+
+        $resolved = null;
+        foreach ($candidates as $candidate) {
+            if (is_numeric($candidate)) {
+                $resolved = (int) $candidate;
+                break;
+            }
+        }
+
+        // Frontend sent a temp id like "local-..." with no real DB id
+        if ($resolved === null && ($id !== null || $request->has('id') || $request->has('comment_id'))) {
+            return response()->json([
+                'message' => 'Invalid comment id. Use the integer id from view_comments, not a temporary local-* id.',
+                'errors' => [
+                    'id' => ['The id field must be an integer DB id.'],
+                ],
+            ], 422);
+        }
+
+        $data['id'] = $resolved;
         validator($data, [
             'id' => 'required|integer|exists:comments,id',
         ])->validate();
@@ -40,8 +64,31 @@ class CommentsController extends Controller
 
     public function delete_comment(Request $request, $id = null)
     {
+        $candidates = [
+            $request->input('id'),
+            $request->input('comment_id'),
+            $id,
+        ];
+
+        $resolved = null;
+        foreach ($candidates as $candidate) {
+            if (is_numeric($candidate)) {
+                $resolved = (int) $candidate;
+                break;
+            }
+        }
+
+        if ($resolved === null && ($id !== null || $request->has('id') || $request->has('comment_id'))) {
+            return response()->json([
+                'message' => 'Invalid comment id. Use the integer id from view_comments, not a temporary local-* id.',
+                'errors' => [
+                    'id' => ['The id field must be an integer DB id.'],
+                ],
+            ], 422);
+        }
+
         $data = [
-            'id' => $id ?? $request->input('id'),
+            'id' => $resolved,
         ];
 
         validator($data, [
@@ -51,15 +98,15 @@ class CommentsController extends Controller
         return $this->commentService->delete_comment($data, $request->user()->id);
     }
 
-    public function view_comments($postId = null)
+    public function view_comments(Request $request, $id = null)
     {
-        $data = [
-            'post_id' => $postId,
-        ];
+        $request->merge([
+            'id' => $id ?? $request->input('id') ?? $request->input('post_id'),
+        ]);
 
-        validator($data, [
-            'post_id' => 'required|integer|exists:posts,id',
-        ])->validate();
+        $data = $request->validate([
+            'id' => 'required|integer|exists:posts,id',
+        ]);
 
         return $this->commentService->view_comments($data);
     }
