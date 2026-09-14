@@ -27,33 +27,77 @@ class LikeController extends Controller
         ]);
     }
 
-    public function likes_count(Request $request, $postId = null)
+    public function likes_count(Request $request)
     {
-        $postId = $postId ?? $request->input('post_id');
-
-        validator(['post_id' => $postId], [
-            'post_id' => 'required|integer|exists:posts,id',
-        ])->validate();
+        $validated = $request->validate([
+            'post_id' => [
+                'nullable',
+                'integer',
+                'required_without:comment_id',
+                'prohibits:comment_id',
+                'exists:posts,id',
+            ],
+            'comment_id' => [
+                'nullable',
+                'integer',
+                'required_without:post_id',
+                'prohibits:post_id',
+                'exists:comments,id',
+            ],
+        ]);
 
         return response()->json([
-            'post_id' => (int) $postId,
-            'count' => $this->likeService->likesCount($postId),
+            'post_id'    => $validated['post_id'] ?? null,
+            'comment_id' => $validated['comment_id'] ?? null,
+            'count'      => $this->likeService->likesCount($validated),
         ]);
     }
 
-    public function post_like(Request $request, $postId = null)
+    public function toggle_like(Request $request)
     {
-        $request->merge([
-            'post_id' => $postId ?? $request->input('post_id'),
-        ]);
-
         $data = $request->validate([
-            'post_id' => 'required|integer|exists:posts,id',
+            'post_id' => [
+                'nullable',
+                'integer',
+                'required_without:comment_id',
+                'prohibits:comment_id',
+                'exists:posts,id',
+            ],
+            'comment_id' => [
+                'nullable',
+                'integer',
+                'required_without:post_id',
+                'prohibits:post_id',
+                'exists:comments,id',
+            ],
         ]);
 
         $result = $this->likeService->like($data, $request->user()->id);
 
-        return $result;
+        return response()->json($result);
     }
 
+    public function user_list(Request $request)
+    {
+        $validated = $request->validate([
+            'post_id' => [
+                'nullable',
+                'integer',
+                'required_without:comment_id',
+                'prohibits:comment_id',
+                'exists:posts,id',
+            ],
+            'comment_id' => [
+                'nullable',
+                'integer',
+                'required_without:post_id',
+                'prohibits:post_id',
+                'exists:comments,id',
+            ],
+        ]);
+
+        return response()->json([
+            'users' => $this->likeService->usersWhoLiked($validated),
+        ]);
+    }
 }
