@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Comment;
+use App\Models\PostAttachment;
+use App\Services\BaseService;
 use Illuminate\Support\Facades\DB;
 
 class CommentService extends BaseService
@@ -16,6 +18,21 @@ class CommentService extends BaseService
                 'post_id' => $data['post_id'],
                 'content' => $data['content'],
             ]);
+            if (isset($data['images']) && count($data["images"]))
+            {
+                foreach($data["images"] as $image) {
+                    // $folder = "/uploads/post_images_".$post->id;
+
+                    $file_url = $image->store("uploads", "public");
+
+                    $url_to_save = url("/storage/" . $file_url);
+
+                    PostAttachment::create([
+                        'comment_id'=> $comment->id,
+                        'url'=> $url_to_save
+                    ]);
+                }
+            }
         });
 
         return response()->json([
@@ -60,7 +77,7 @@ class CommentService extends BaseService
 
     public function view_comments($data = [])
     {
-        $comments = Comment::with(['user'])
+        $comments = Comment::with(['user', 'attachments'])
             ->where('post_id', $data['id'])
             ->latest()
             ->get();

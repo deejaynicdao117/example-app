@@ -24,6 +24,8 @@ class PostController extends Controller
         $data = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
+            'images' => 'sometimes|required|array',
+            'images.*' => 'file|image',
         ]);
 
         $result = $this->PostService->new_post($data, $request->user()->id);

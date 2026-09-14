@@ -17,8 +17,10 @@ class CommentsController extends Controller
     public function add_comment(Request $request)
     {
         $data = $request->validate([
-            'post_id' => 'required|integer|exists:posts,id',
+            'post_id' => 'integer|exists:posts,id',
             'content' => 'required|string',
+            'images' => 'sometimes|required|array',
+            'images.*' => 'file|image',
         ]);
 
         return $this->commentService->add_comment($data, $request->user()->id);

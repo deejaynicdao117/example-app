@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Post;
+use App\Models\PostAttachment;
 use Illuminate\Support\Facades\DB;
 
 class PostService extends BaseService
@@ -17,6 +18,22 @@ class PostService extends BaseService
                 'title' => $data['title'],
                 'content' => $data['content'],
             ]);
+
+            if (isset($data['images']) && count($data["images"]))
+            {
+                foreach($data["images"] as $image) {
+                    // $folder = "/uploads/post_images_".$post->id;
+
+                    $file_url = $image->store("uploads", "public");
+
+                    $url_to_save = url("/storage/" . $file_url);
+
+                    PostAttachment::create([
+                        'post_id'=> $post->id,
+                        'url'=> $url_to_save
+                    ]);
+                }
+            }
         });
 
         return response()->json([
@@ -27,9 +44,9 @@ class PostService extends BaseService
 
     public function view_post($data = [], $user_id = null)
     {
-        $posts = Post::with('user', 'comments')
+        $posts = Post::with('user', 'comments.attachments', 'attachments')
             ->withCount('likes', 'comments')
-            ->get();
+            ->latest()->get();
 
         return response()->json([
             'data' => $posts,
