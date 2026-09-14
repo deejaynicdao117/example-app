@@ -24,6 +24,8 @@ class PostController extends Controller
         $data = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
+            'images' => 'sometimes|required|array',
+            'images.*' => 'file|image',
         ]);
 
         $result = $this->PostService->new_post($data, $request->user()->id);
@@ -37,8 +39,12 @@ class PostController extends Controller
         return $result;
     }
 
-    public function update_post(Request $request)
+    public function update_post(Request $request, $id = null)
     {
+        if ($id !== null && !$request->has('id')) {
+            $request->merge(['id' => $id]);
+        }
+
         $data = $request->validate([
             'id' => 'required|integer|exists:posts,id',
             'title' => 'required|string|max:255',

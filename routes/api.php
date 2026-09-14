@@ -35,6 +35,7 @@ Route::prefix('posts')
         Route::post('/new_post', 'new_post');
         Route::get('/view_post/{id?}', 'view_post');
         Route::put('/update_post/{id?}', 'update_post');
+        Route::put('/edit_post/{id?}', 'update_post');
         Route::delete('/delete_post/{id?}', 'delete_post');
     });
 
@@ -43,9 +44,13 @@ Route::prefix('comments')
     ->controller(App\Http\Controllers\CommentsController::class)
     ->group(function () {
         Route::post('/add_comments', 'add_comment');
+        Route::post('/add_comment', 'add_comment');
         Route::put('/edit_comment/{id?}', 'edit_comment');
+        Route::put('/edit_comments/{id?}', 'edit_comment');
         Route::delete('/delete_comment/{id?}', 'delete_comment');
+        Route::delete('/delete_comments/{id?}', 'delete_comment');
         Route::get('/view_comments/{id?}', 'view_comments');
+        Route::get('/view_comment/{id?}', 'view_comments');
     });
 
 Route::prefix('likes')
