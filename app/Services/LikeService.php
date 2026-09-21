@@ -59,7 +59,7 @@ class LikeService extends BaseService
         ];
     }
 
-    public function usersWhoLiked(array $data)
+    public function usersWhoLikedpost(array $data)
     {
         $postId = $data['post_id'] ?? null;
         $commentId = $data['comment_id'] ?? null;

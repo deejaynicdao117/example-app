@@ -75,9 +75,28 @@ class CommentService extends BaseService
         ]);
     }
 
-    public function view_comments($data = [])
+    public function view_comments($data = [], $user_id = null)
     {
         $comments = Comment::with(['user', 'attachments'])
+            ->with([
+                'liked' => function ($query) use ($user_id) {
+                    if ($user_id !== null) {
+                        $query->where('user_id', $user_id);
+                    }
+                },
+                'likes.user:id,name,email',
+            ])
+            ->withExists([
+                'likes as user_liked' => function ($query) use ($user_id) {
+                    if ($user_id !== null) {
+                        $query->where('user_id', $user_id);
+                    } else {
+                        // No authenticated user -> never liked.
+                        $query->whereRaw('1 = 0');
+                    }
+                }
+            ])
+            ->withCount('likes')
             ->where('post_id', $data['id'])
             ->latest()
             ->get();

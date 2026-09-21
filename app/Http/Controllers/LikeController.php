@@ -14,6 +14,26 @@ class LikeController extends Controller
         $this->likeService = $likeService;
     }
 
+    protected function hydrateLikeTarget(Request $request): Request
+    {
+        $route = $request->route();
+
+        if ($route) {
+            $postId = $route->parameter('postId');
+            $commentId = $route->parameter('commentId');
+
+            if ($postId !== null && !$request->has('post_id')) {
+                $request->merge(['post_id' => $postId]);
+            }
+
+            if ($commentId !== null && !$request->has('comment_id')) {
+                $request->merge(['comment_id' => $commentId]);
+            }
+        }
+
+        return $request;
+    }
+
     public function user_likes(Request $request, $userId = null)
     {
         $userId = $userId ?? $request->user()->id;
@@ -29,6 +49,8 @@ class LikeController extends Controller
 
     public function likes_count(Request $request)
     {
+        $request = $this->hydrateLikeTarget($request);
+
         $validated = $request->validate([
             'post_id' => [
                 'nullable',
@@ -55,6 +77,8 @@ class LikeController extends Controller
 
     public function toggle_like(Request $request)
     {
+        $request = $this->hydrateLikeTarget($request);
+
         $data = $request->validate([
             'post_id' => [
                 'nullable',
@@ -79,6 +103,8 @@ class LikeController extends Controller
 
     public function user_list(Request $request)
     {
+        $request = $this->hydrateLikeTarget($request);
+
         $validated = $request->validate([
             'post_id' => [
                 'nullable',
@@ -97,7 +123,7 @@ class LikeController extends Controller
         ]);
 
         return response()->json([
-            'users' => $this->likeService->usersWhoLiked($validated),
+            'users' => $this->likeService->usersWhoLikedPost($validated),
         ]);
     }
 }

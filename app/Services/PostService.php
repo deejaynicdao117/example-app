@@ -42,11 +42,38 @@ class PostService extends BaseService
         ], 201);
     }
 
-    public function view_post($data = [], $user_id = null)
+    public function view_post($user_id = null)
     {
-        $posts = Post::with('user', 'comments.attachments', 'attachments')
-            ->withCount('likes', 'comments')
+        $posts = Post::with([
+                'user',
+                'comments.user',
+                'comments.attachments',
+                'comments.likes.user:id,name,email',
+                'comments.liked' => function($query) use ($user_id) {
+                    $query->where('user_id', $user_id);
+                },
+                'attachments',
+                'likes' => function($query) use ($user_id) {
+                    $query->where('user_id', $user_id);
+                }
+            ])
+            ->withExists([
+                'likes as user_liked' => function($query) use ($user_id) {
+                    $query->where('user_id', $user_id);
+                }
+            ])
+            ->withCount(['likes', 'comments'])
             ->latest()->get();
+
+        // Attach per-comment like metadata reusing the eager-loaded relations
+        // (avoids N+1 queries): likes_count, user_liked, liked_by_users.
+        $posts->each(function ($post) use ($user_id) {
+            $post->comments->each(function ($comment) use ($user_id) {
+                $comment->setAttribute('likes_count', $comment->likes->count());
+                $comment->setAttribute('user_liked', $comment->likes->contains('user_id', (int) $user_id));
+                $comment->setAttribute('liked_by_users', $comment->likes->pluck('user')->filter()->values());
+            });
+        });
 
         return response()->json([
             'data' => $posts,

@@ -35,6 +35,10 @@ class Post extends Model
         return $this->hasMany(Like::class, 'post_id', 'id');
     }
 
+    public function liked () {
+        return $this->hasOne(Like::class, 'post_id', 'id');
+    }
+
     public function attachments()
     {
         return $this->hasMany(PostAttachment::class, 'post_id', 'id');

@@ -59,5 +59,11 @@ Route::prefix('likes')
     ->group(function () {
         Route::get('/user_likes/{userId?}', 'user_likes');
         Route::get('/likes_count/{postId?}', 'likes_count');
-        Route::post('/post_like/{postId?}', 'post_like');
+        Route::post('/post_like/{postId?}', 'toggle_like');
+        Route::post('/toggle_like/{postId?}', 'toggle_like');
+        Route::get('/user_list/{postId?}', 'user_list');
+        // Comment likes (same toggle/count/list logic, comment_id target).
+        Route::post('/comment_like/{commentId?}', 'toggle_like');
+        Route::get('/comment_likes_count/{commentId?}', 'likes_count');
+        Route::get('/comment_user_list/{commentId?}', 'user_list');
     });
