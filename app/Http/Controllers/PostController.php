@@ -34,7 +34,7 @@ class PostController extends Controller
     }
 
     public function view_post(Request $request){
-        $result = $this->PostService->view_post();
+        $result = $this->PostService->view_post($request->user()->id);
 
         return $result;
     }

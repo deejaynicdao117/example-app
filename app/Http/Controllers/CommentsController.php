@@ -110,6 +110,6 @@ class CommentsController extends Controller
             'id' => 'required|integer|exists:posts,id',
         ]);
 
-        return $this->commentService->view_comments($data);
+        return $this->commentService->view_comments($data, $request->user()->id);
     }
 }

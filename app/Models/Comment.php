@@ -25,4 +25,14 @@ class Comment extends Model
     {
          return $this->hasMany(PostAttachment::class, 'comment_id', 'id');
     }
+
+    public function likes()
+    {
+        return $this->hasMany(Like::class, 'comment_id', 'id');
+    }
+
+    public function liked()
+    {
+        return $this->hasOne(Like::class, 'comment_id', 'id');
+    }
 }
