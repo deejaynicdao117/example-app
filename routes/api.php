@@ -25,18 +25,18 @@ Route::prefix('user')
         Route::post('/create_users', 'create_user');
     });
 
-// Public list endpoint (no auth required)
-// Route::get('/posts', [PostController::class, 'view_post']);
+// Public feed - readable without a token (supports optional auth for liked flags).
+Route::get('/posts', [PostController::class, 'view_post']);
 
 Route::prefix('posts')
-    ->middleware('auth:sanctum')
     ->controller(PostController::class)
     ->group(function () {
-        Route::post('/new_post', 'new_post');
+        // Public: feed list. Write operations stay behind sanctum below.
         Route::get('/view_post/{id?}', 'view_post');
-        Route::put('/update_post/{id?}', 'update_post');
-        Route::put('/edit_post/{id?}', 'update_post');
-        Route::delete('/delete_post/{id?}', 'delete_post');
+        Route::post('/new_post', 'new_post')->middleware('auth:sanctum');
+        Route::put('/update_post/{id?}', 'update_post')->middleware('auth:sanctum');
+        Route::put('/edit_post/{id?}', 'update_post')->middleware('auth:sanctum');
+        Route::delete('/delete_post/{id?}', 'delete_post')->middleware('auth:sanctum');
     });
 
 Route::prefix('comments')

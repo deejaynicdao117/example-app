@@ -34,7 +34,10 @@ class PostController extends Controller
     }
 
     public function view_post(Request $request){
-        $result = $this->PostService->view_post($request->user()->id);
+        // Public route has no auth middleware, so $request->user() (default
+        // web guard) is always null here. Resolve via sanctum explicitly so
+        // `user_liked` flags hydrate when a Bearer token is present.
+        $result = $this->PostService->view_post(auth('sanctum')->user()?->id);
 
         return $result;
     }

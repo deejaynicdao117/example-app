@@ -50,16 +50,28 @@ class PostService extends BaseService
                 'comments.attachments',
                 'comments.likes.user:id,name,email',
                 'comments.liked' => function($query) use ($user_id) {
-                    $query->where('user_id', $user_id);
+                    if ($user_id) {
+                        $query->where('user_id', $user_id);
+                    } else {
+                        $query->whereRaw('1 = 0');
+                    }
                 },
                 'attachments',
                 'likes' => function($query) use ($user_id) {
-                    $query->where('user_id', $user_id);
+                    if ($user_id) {
+                        $query->where('user_id', $user_id);
+                    } else {
+                        $query->whereRaw('1 = 0');
+                    }
                 }
             ])
             ->withExists([
                 'likes as user_liked' => function($query) use ($user_id) {
-                    $query->where('user_id', $user_id);
+                    if ($user_id) {
+                        $query->where('user_id', $user_id);
+                    } else {
+                        $query->whereRaw('1 = 0');
+                    }
                 }
             ])
             ->withCount(['likes', 'comments'])
